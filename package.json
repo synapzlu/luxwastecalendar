@@ -1,0 +1,20 @@
+{
+  "name": "luxwastecalendar",
+  "version": "0.0.1",
+  "description": "Web crawler of waste pickup calendars in various cities in Luxembourg.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synapzlu/luxwastecalendar.git"
+  },
+  "author": "SynapzLu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/synapzlu/luxwastecalendar/issues"
+  },
+  "homepage": "https://github.com/synapzlu/luxwastecalendar#readme",
+  "keywords": []
+}
