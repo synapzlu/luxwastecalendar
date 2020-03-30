@@ -16,5 +16,8 @@
     "url": "https://github.com/synapzlu/luxwastecalendar/issues"
   },
   "homepage": "https://github.com/synapzlu/luxwastecalendar#readme",
-  "keywords": []
+  "keywords": [],
+  "dependencies": {
+    "node-ical": "^0.10.0"
+  }
 }
