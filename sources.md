@@ -1,19 +1,19 @@
 # VDL
-format:ics
-url:https://www.vdl.lu/fr/vivre/domicile-au-quotidien/collecter-et-trier-ses-dechets/calendrier-des-collectes/
+- https://www.vdl.lu/fr/vivre/domicile-au-quotidien/collecter-et-trier-ses-dechets/calendrier-des-collectes/
+- format: ics
 
 # Bertrange, Garnich, Kehlen, Koerich, Kopstal, Mamer, Steinfort, Habscht
-format:html and pdf
-url:https://sicaapp.lu/
+- https://sicaapp.lu/
+- format: html and pdf
 
 # Differdange
-format:pdf
-url:https://differdange.lu/wp-content/uploads/2020/01/Emweltkalenner.pdf
+- https://differdange.lu/wp-content/uploads/2020/01/Emweltkalenner.pdf
+- format: pdf
 
 # Centre and Nord
-format:html
-url:http://sidec.lu/fr/Collectes/Calendrier?annee=2020&myCommune=1042
+- http://sidec.lu/fr/Collectes/Calendrier?annee=2020&myCommune=1042
+- format: html
 
 # Country (Valorlux)
-format: html and pdf
-url:https://calendar.valorlux.lu/
+- https://calendar.valorlux.lu/
+- format: html and pdf
