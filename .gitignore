@@ -1,5 +1,7 @@
 # Temp files
 tmp
+output
+lambda.js
 
 # Logs
 logs

@@ -3,29 +3,43 @@ const fs = require('fs');
 const ical = require('node-ical'); // ical (.ics) file parser
 const fixy = require('fixy'); // Fixed width column parser
 
-const Address = require('./classes/Address');
+// const Address = require('./classes/Address');
 const Collecte = require('./classes/Collecte');
 
-var collecteList = [];
-var addressList = []; 
+let collecteList = [];
+let addressList = []; 
+let postalCodesList = [];
 
-const MAX_VDL = 798; // 798 As found on https://www.vdl.lu/fr/vivre/domicile-au-quotidien/collecter-et-trier-ses-dechets/calendrier-des-collectes/
+const MAX_VDL = 100; // 798 As found on https://www.vdl.lu/fr/vivre/domicile-au-quotidien/collecter-et-trier-ses-dechets/calendrier-des-collectes/
 
 
 ////////// Utility functions
 var cleanup = function () {
-    fs.mkdir('tmp/', { recursive: true }, (err) => {
+    fs.mkdir(`output/${datetimestamp}`, { recursive: true }, (err) => {
         if (err) throw err;
     });
 }
 var writeFile = function (cc, dest, callback) {
-    let json = JSON.stringify(cc);
-    fs.writeFile(dest, json, 'utf8', callback);
+    let json = JSON.stringify(cc, null, 2);
+    fs.writeFile(`output/${datetimestamp}/${dest}`, json, 'utf8', callback);
 }
 var sleep = function (ms) {
     return new Promise((resolve) => {
         setTimeout(resolve, ms);
     });
+}
+var sortByDate = function (a, b) {
+    // Use toUpperCase() to ignore character casing
+    const dateA = new Date(a.event_date);
+    const dateB = new Date(b.event_date);
+
+    let comparison = 0;
+    if (dateA > dateB) {
+        comparison = 1;
+    } else if (dateA < dateB) {
+        comparison = -1;
+    }
+    return comparison;
 }
 var initDatetimestamp = function () {
     let today = new Date();
@@ -47,7 +61,7 @@ async function getAddresses() {
         let tempList = [];       
         
         // TODO : download new version at runtime
-        let file = fs.readFileSync('./caclr/TR.DICACOLO.RUCP', 'UTF-8');
+        let file = fs.readFileSync('./caclr/TR.DICACOLO.RUCP', 'binary'); // Source enconding is CP-1252 but 'binary' seems to work also
         var rawList = fixy.parse({
             map: [{
                 name: "Canton",
@@ -90,10 +104,16 @@ async function getAddresses() {
         // for (key in rawList) {
         //     tempList.push(new Address(rawList[key].Canton, rawList[key].District, rawList[key].Commune, rawList[key].Localite, rawList[key].Rue, rawList[key].CodePostal));
         // };
-        
-        writeFile(rawList, `tmp/caclr_${datetimestamp}.json`, function() {}); // Dump files for offline processing
 
-        resolve(rawList); // successfully fill promise
+
+        // Extracting list of unique of postal codes
+        postalCodesList = [...new Set(rawList.map(x => x.CodePostal))]; // TOOD: understand this magic line
+
+        // Dump files for offline processing
+        writeFile(rawList, `caclr.json`, function() {}); 
+
+        // successfully fill promise
+        resolve(rawList); 
         
     })
 }
@@ -109,9 +129,12 @@ async function vdl_download() {
         vdl_icsParse(url);
         await sleep(Math.random() * 500); // Bypass http request rate protection from target web hosting
     } while (index < MAX_VDL);
-    writeFile(collecteList, `tmp/VDL_${datetimestamp}.json`, function () { });
+    
+    // Sort events by date and dump complete VDL repository for offline processing
+    writeFile(collecteList.sort(sortByDate), `VDL.json`, function () { });
+    
+    writeByPostalCode();
 }
-
 
 function vdl_icsParse(url) {
     console.log(url);
@@ -125,24 +148,54 @@ function vdl_icsParse(url) {
                 const ev = data[k];
                 if (data[k].type == 'VEVENT') {
                     // Clean up the source as all location fields (street names) have a "Luxembourg" suffix
-                    let tmplocation = ev.location.substr(0, ev.location.lastIndexOf(" "));  
+                    ev.location = ev.location.substr(0, ev.location.lastIndexOf(" "));  
 
                     // Reverse search for codepostal based on street name
-                    let tmpcodepostal = addressList.find(addr => addr.Localite === 'Luxembourg' && addr.Rue === tmplocation);
+                    // As we want to use codepostal and primary key for output files, we'll ignore the street number ranges in reverse search and mapping
+                    // But we'll extract the street numbers to store them explicitely
+                    // e.g. "Rue Laurent Menager - 49-151, 50-162"
+                    let streetNumbersIndex = ev.location.lastIndexOf(" - ");
+                    let streetNumbers = -1;
 
+                    if (streetNumbersIndex > 0) {
+                        streetNumbers = ev.location.substr(streetNumbersIndex+3, ev.location.length); // Extract street numbers to another variable
+                        ev.location = ev.location.substr(0, streetNumbersIndex); // Remove street numbers from field
+                    }
+
+                    let tmpcodepostal = addressList.find(addr => addr.Localite === 'Luxembourg' && addr.Rue === ev.location);                    
+                    
                     // Replace by -1 if Address was not found in addressList or if found with a null value
                     if (tmpcodepostal && Number.isInteger(tmpcodepostal.CodePostal)) {
                         tmpcodepostal = tmpcodepostal.CodePostal;
                     } else {
                         tmpcodepostal = -1;
-                        console.debug("CodePostal not found for " + tmplocation);
+                        console.debug("Postal code not found for " + ev.location);
                     }
 
-                    collecteList.push(new Collecte(ev.uid, ev.start, "Luxembourg", tmplocation, tmpcodepostal, ev.summary));
+                    collecteList.push(new Collecte(ev.uid, ev.start, "Luxembourg", ev.location, streetNumbers, tmpcodepostal, ev.summary));
                 }
             }
         }
     });
+}
+
+
+// Main output
+function writeByPostalCode() {
+    for (p of postalCodesList) {
+
+        let tmpcollecte = collecteList.filter(collecteList => collecteList.codepostal === p);
+
+        if (tmpcollecte.length != 0) {
+            
+            // Sort events by date and dump files for offline processing
+            writeFile(tmpcollecte.sort(sortByDate), `${p}.json`, function() {}); 
+            
+            console.log(p);
+        }
+
+         
+    }
 }
 
 
@@ -153,7 +206,6 @@ async function app() {
     addressList = await getAddresses();
     console.log("Address list size:" + addressList.length);
     vdl_download();
-
     //writeFile(addressList, 'plop.json', function() {});    
 }
 

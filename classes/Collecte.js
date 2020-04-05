@@ -16,11 +16,12 @@
 
 module.exports = class Collecte {
 
-  constructor(uid, event_date, city, location, codepostal, summary) {
+  constructor(uid, event_date, city, location, streetNumbers, codepostal, summary) {
     this.uid = uid;    
     this.event_date = event_date;
     this.city = city;
     this.location = location;
+    this.streetNumbers = streetNumbers;
     this.codepostal = codepostal;
     this.summary = summary;
   }
@@ -28,8 +29,9 @@ module.exports = class Collecte {
 
 var uid;
 var event_date;
-var location;
 var city;
+var location;
+var streetNumbers;
 var codepostal;
 var summary;
 
