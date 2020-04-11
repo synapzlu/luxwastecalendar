@@ -19,6 +19,7 @@
   "keywords": [],
   "dependencies": {
     "fixy": "^1.2.1",
-    "node-ical": "^0.10.0"
+    "node-ical": "^0.10.0",
+    "request": "^2.88.2"
   }
 }

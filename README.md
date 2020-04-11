@@ -58,7 +58,7 @@ Output files can be found in output/${timestamp}/ folder
 
 ----------
 # Known issues
-Several streets in Luxembourg-Ville have 2 different waste pickup calendars. This is not handled yet and all street entries will have a null postal code.
+- Several streets from "registre-national-des-localites-et-des-rues" resolve to null or empty postal codes. These streets are then ignored in waste calendar parsing.
 
 # Credits
 - https://data.public.lu/fr/datasets/registre-national-des-localites-et-des-rues/
