@@ -46,7 +46,7 @@ exports.handler = function(event, context, callback) {
        callback(err);
   }
   
-  // Log to CloudWatch
+  // Log the greeting to CloudWatch
   console.log(collecteList);
 
   callback(null, {
