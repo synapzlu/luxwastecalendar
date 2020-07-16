@@ -8,6 +8,8 @@ let now = new Date();
 
 var getNextCollectesByPostalCode = function (pc, opts) {
     let file;
+
+    // Each postal code must be represented as a local JSON file stored in repo/ folder.
     try {
         file = fs.readFileSync(`repo/${pc}.json`);
     } catch (err) {
@@ -17,8 +19,10 @@ var getNextCollectesByPostalCode = function (pc, opts) {
     let collectes = JSON.parse(file);
     let nextCollectes = [];
 
+    // Check if maxresults was provided as API argument, else use default value
     let maxresults = opts['maxresults'] ? opts['maxresults'] : DEFAULT_MAXRESULTS;
 
+    // Check if a specific type of waste was provided as API argument and use it as a filter, else return all types.
     if (opts['summaryfilter']) {
         nextCollectes = collectes.filter(coll => coll.codepostal === pc && new Date(coll.event_date) >= now && coll.summary.toLowerCase().includes(opts['summaryfilter'].toLowerCase())).slice(0, maxresults);
     } else {
