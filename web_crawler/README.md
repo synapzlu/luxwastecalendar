@@ -1,4 +1,4 @@
-# luxwastecalendar
+# luxwastecalendar/web_crawler
 Web crawler of waste pickup calendars in various cities in Luxembourg.
 Datasets are matched against CACLR address database from data.public.lu
 
@@ -53,6 +53,7 @@ Sample of one output JSON file :
 Developed and tested on Nodejs v12
 
 # Usage
+`node install`
 `node index.js`
 Output files can be found in output/${timestamp}/ folder
 
