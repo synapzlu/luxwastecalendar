@@ -4,7 +4,7 @@
   "description": "Web crawler of waste pickup calendars in various cities in Luxembourg.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -18,8 +18,14 @@
   "homepage": "https://github.com/synapzlu/luxwastecalendar#readme",
   "keywords": [],
   "dependencies": {
-    "fixy": "^1.2.1",
+    "ajv": "^6.12.3",
+    "cheerio": "^1.0.0-rc.3",
+    "fixy": "^1.3.0",
+    "got": "^11.5.1",
     "node-ical": "^0.10.0",
     "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "jest": "^26.2.2"
   }
 }

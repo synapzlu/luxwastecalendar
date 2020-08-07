@@ -1,59 +1,88 @@
 'use strict';
 const fs = require('fs');
 
-console.log('Loading function');
-
 const DEFAULT_MAXRESULTS = 5;
-let now = new Date();
 
+var sameDayOrLater = function (d1, d2) {
+    // Timezone fix : adding an arbitrary offset of 4 hours (4*3600000 ms) to make same-day-compare work
+    // Bug description : calendar events are all registered at 00:00:00 UTC+1 or UCT-2 (Europe/Luxembourg).
+    // So when comparing with an UTC baseline, it might slip over 2 different days and break the same-day-compare 
+    d1 = new Date(d1.getTime() + (4 * 3600000));
+    if (d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate())
+        return true
+    else if (d1 >= d2)
+        return true
+    else
+        return false
+}
+
+// This function returns the next calendar events at a given postal code
+// Opts : maxresults ; summaryfilter
 var getNextCollectesByPostalCode = function (pc, opts) {
     let file;
-
-    // Each postal code must be represented as a local JSON file stored in repo/ folder.
     try {
         file = fs.readFileSync(`repo/${pc}.json`);
     } catch (err) {
         throw ("400 Postal code not supported");
     }
-    
+
     let collectes = JSON.parse(file);
     let nextCollectes = [];
 
-    // Check if maxresults was provided as API argument, else use default value
     let maxresults = opts['maxresults'] ? opts['maxresults'] : DEFAULT_MAXRESULTS;
 
-    // Check if a specific type of waste was provided as API argument and use it as a filter, else return all types.
     if (opts['summaryfilter']) {
-        nextCollectes = collectes.filter(coll => coll.codepostal === pc && new Date(coll.event_date) >= now && coll.summary.toLowerCase().includes(opts['summaryfilter'].toLowerCase())).slice(0, maxresults);
+        nextCollectes = collectes.filter(coll => coll.codepostal === pc && sameDayOrLater(new Date(coll.event_date), new Date()) && coll.summary.toLowerCase().includes(opts['summaryfilter'].toLowerCase())).slice(0, maxresults);
     } else {
-        nextCollectes = collectes.filter(coll => coll.codepostal === pc && new Date(coll.event_date) >= now).slice(0, maxresults);
+        nextCollectes = collectes.filter(coll => coll.codepostal === pc && sameDayOrLater(new Date(coll.event_date), new Date())).slice(0, maxresults);
     }
-    return nextCollectes;
+
+    // TODO : Move local time conversion to the alexa skill
+    let collectFix = [];
+    for (let c of nextCollectes) {
+        c.event_date = new Date(c.event_date).toLocaleDateString(undefined, { timeZone: "Europe/Luxembourg" });
+        collectFix.push(c);
+    }
+
+    return collectFix;
 }
 
 
-  
-exports.handler = function(event, context, callback) {
-  
-  if (event.postalcode === undefined) {
-        callback("400 Invalid Input");
-  }
-  
-  let postalcode = Number(event.postalcode);
-  let maxresults = event.maxresults ? event.maxresults : DEFAULT_MAXRESULTS;
-  let collecteList = [];
-  
-  try {
-      collecteList = getNextCollectesByPostalCode(postalcode, {"maxresults":maxresults});
-    // collecteList = getNextCollectesByPostalCode(postalcode, {"maxresults":maxresults, "summaryfilter":"Verre"});
-  } catch (err) {
-       callback(err);
-  }
-  
-  // Log the greeting to CloudWatch
-  console.log(collecteList);
+// Exports for Lambda/API Gateway integration
+exports.handler = function (event, context, callback) {
 
-  callback(null, {
-      "collecteList": collecteList
-  }); 
+    if (event.postalcode === undefined) {
+        callback("400 Invalid Input");
+    }
+
+    let postalcode = Number(event.postalcode);
+    let maxresults = event.maxresults ? event.maxresults : DEFAULT_MAXRESULTS;
+    let collecteList = [];
+   
+    // TODO : Implement summary filter
+    try {
+        collecteList = getNextCollectesByPostalCode(postalcode, { "maxresults": maxresults });
+        // collecteList = getNextCollectesByPostalCode(postalcode, {"maxresults":maxresults, "summaryfilter":"GLASS"});
+    } catch (err) {
+        callback(err);
+    }
+
+    // CloudWatch logging
+    console.log("STAT: Postalcode=" + postalcode);
+    console.debug(collecteList);
+
+    callback(null, {
+        "collecteList": collecteList
+    });
 };
+
+
+// This code exists only for local debug purposes
+var localdebug = function () {
+    
+    let res = getNextCollectesByPostalCode(7513, { maxresults: '3', summaryfilter: 'PMC' });
+    for (let c of res) {
+        console.log(c);
+    }
+}
+localdebug();
