@@ -4,8 +4,8 @@
 
 
 // SECRETS
-const API_URL = "https://hfgkzf8z8b.execute-api.eu-west-1.amazonaws.com/prod/";
-const API_KEY = "7hRDxGuiQz2wNBO5K5LXB9nzpQrY7Ioc7jbaoMw4";
+const API_URL = "oops";
+const API_KEY = "oops";
 const SKILL_ID = "amzn1.ask.skill.e072e8a9-dd1e-4b13-8bbb-26e23ec50bee";
 
 
