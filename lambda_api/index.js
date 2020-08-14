@@ -3,12 +3,14 @@ const fs = require('fs');
 
 const DEFAULT_MAXRESULTS = 5;
 
-var sameDayOrLater = function (d1, d2) {
+var sameDayOrLater = function (d1) {
     // Timezone fix : adding an arbitrary offset of 4 hours (4*3600000 ms) to make same-day-compare work
-    // Bug description : calendar events are all registered at 00:00:00 UTC+1 or UCT-2 (Europe/Luxembourg).
+    // Bug description : calendar events are all registered at 00:00:00 UTC+1 or UCT+2 (Europe/Luxembourg).
     // So when comparing with an UTC baseline, it might slip over 2 different days and break the same-day-compare 
+    // TODO : remove the ugly hardcoded rule to filter out events happening same day before 10am UTC
+    let d2 = new Date();
     d1 = new Date(d1.getTime() + (4 * 3600000));
-    if (d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate())
+    if (d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate() && d2.getHours > 10)
         return true
     else if (d1 >= d2)
         return true
@@ -32,9 +34,9 @@ var getNextCollectesByPostalCode = function (pc, opts) {
     let maxresults = opts['maxresults'] ? opts['maxresults'] : DEFAULT_MAXRESULTS;
 
     if (opts['summaryfilter']) {
-        nextCollectes = collectes.filter(coll => coll.codepostal === pc && sameDayOrLater(new Date(coll.event_date), new Date()) && coll.summary.toLowerCase().includes(opts['summaryfilter'].toLowerCase())).slice(0, maxresults);
+        nextCollectes = collectes.filter(coll => coll.codepostal === pc && sameDayOrLater(new Date(coll.event_date)) && coll.summary.toLowerCase().includes(opts['summaryfilter'].toLowerCase())).slice(0, maxresults);
     } else {
-        nextCollectes = collectes.filter(coll => coll.codepostal === pc && sameDayOrLater(new Date(coll.event_date), new Date())).slice(0, maxresults);
+        nextCollectes = collectes.filter(coll => coll.codepostal === pc && sameDayOrLater(new Date(coll.event_date))).slice(0, maxresults);
     }
 
     // TODO : Move local time conversion to the alexa skill
@@ -58,7 +60,7 @@ exports.handler = function (event, context, callback) {
     let postalcode = Number(event.postalcode);
     let maxresults = event.maxresults ? event.maxresults : DEFAULT_MAXRESULTS;
     let collecteList = [];
-   
+
     // TODO : Implement summary filter
     try {
         collecteList = getNextCollectesByPostalCode(postalcode, { "maxresults": maxresults });
@@ -79,8 +81,9 @@ exports.handler = function (event, context, callback) {
 
 // This code exists only for local debug purposes
 var localdebug = function () {
-    
-    let res = getNextCollectesByPostalCode(7513, { maxresults: '3', summaryfilter: 'PMC' });
+
+    // let res = getNextCollectesByPostalCode(7513, { maxresults: '3', summaryfilter: 'PMC' });
+    let res = getNextCollectesByPostalCode(7513, { maxresults: '3' });
     for (let c of res) {
         console.log(c);
     }

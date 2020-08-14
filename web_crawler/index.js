@@ -1,76 +1,72 @@
-const https = require('https');
-const fs = require('fs');
-
+const vdl = require('./connectors/vdl');
+const sidec = require('./connectors/sidec');
+const valorlux = require('./connectors/valorlux');
 const utils = require('./utils');
-const caclr = require('./caclr/caclr');
+const files = require('./files');
 
-const vdl = require('./sources/vdl');
-const sidec = require('./sources/sidec');
-const valorlux = require('./sources/valorlux');
+const datetimestamp = utils.initDatetimestamp();
 
-const datetimestamp = utils.initDatetimestamp(); 
-let addressList = []; 
-let postalCodesList = [];
 
-////////// Utility functions
-// Supposed to delete temporary content
-var cleanup = function () {
-    fs.mkdir(`output/${datetimestamp}`, { recursive: true }, (err) => {
-        if (err) throw err;
-    });
-}
-// Export content in a single file
-var writeFile = function (cc, dest, callback) {
-    let json = JSON.stringify(cc, null, 2);
-    fs.writeFile(`output/${datetimestamp}/${dest}`, json, 'utf8', callback);
-}
-// Export crawled content in multiple files for each postal code.
-function writeByPostalCode(arg) {
-    for (p of postalCodesList) {
-        let tmpCollecte = arg.filter(arg => arg.codepostal === p);
-        if (tmpCollecte.length != 0) {            
-            // Sort events by date and dump files for offline processing
-            writeFile(tmpCollecte.sort((e1,e2) => utils.sortByDate(e1.event_date,e2.event_date))), `${p}.json`, function() {});             
-            console.log(`[APP] Writing ${p}.json`);
-        }         
-    }
+// Entry point
+var myArgs = process.argv.slice(2);
+switch (myArgs[0]) {
+  case 'dryrun':
+    console.log("[APP] Starting in DRYRUN mode");
+    main(utils.DRYRUN);
+    break;
+  case 'offline':
+    console.log("[APP] Starting in OFFLINE mode");
+    main(utils.MODE_OFFLINE);
+    break;
+  default:
+    main();
 }
 
 
-///// Main
-async function app() {
-    cleanup();
-    
-    addressList = await caclr.getAddresses();       
 
-    // Extracting list of unique of postal codes. TODO: magic line :) 
-    postalCodesList = [...new Set(addressList.map(x => x.CodePostal))];    
 
-    let vdlList = [];
-    // vdlList = await vdl.download(addressList);   
-     
-    let sidecList = [];
-    // sidecList = await sidec.download(addressList);   
-   
-    let valorluxList = [];
-    // valorluxList = await valorlux.download(addressList);   
-    
-    let fullList = vdlList.concat(sidecList).concat(valorluxList);
-    // let fullList = JSON.parse(fs.readFileSync('./output/full.json'));
-
-    console.log("[APP] Start writing files to output/"+datetimestamp+" folder");
-    writeByPostalCode(fullList);
-
-    // Dump files for offline processing
-    writeFile(addressList, `caclr.json`, function() {}); 
-    // Sort events by date and dump complete repositories for offline processing
-    writeFile(sidecList.sort((e1,e2) => utils.sortByDate(e1.event_date,e2.event_date))), `sidec.json`, function () { });    
-    writeFile(vdlList.sort((e1,e2) => utils.sortByDate(e1.event_date,e2.event_date))), `vdl.json`, function () { });
-    writeFile(valorluxList.sort((e1,e2) => utils.sortByDate(e1.event_date,e2.event_date)), `valorlux.json`, function () { });
+// Main loop
+function main(mode) {
+  Promise.all([
+    sidec.getContent(mode),
+    valorlux.getContent(mode),
+    vdl.getContent(mode)
+  ]).then((res) => writeIndividualFiles(res), errHandler)
+  .then((res) => mergeFiles(res), errHandler)
+  .then((res) => writeFiles(res), errHandler)
+  .then(console.log(`[APP] Process complete. Output files can be found in : output/${datetimestamp} folder`));
 }
 
-app();
 
 
 
 
+//// Content handlers
+
+// Write content of each connector into individual files
+var writeIndividualFiles = (data) => {
+  let sumList = [];
+  for (d of data) {
+      files.writeFile(d.collecteList, datetimestamp, `${d.name}.json`);
+  }
+  return data;
+};
+// Merge all content into a single array
+var mergeFiles = (data) => {
+  let sumList = [];
+  for (d of data) {
+    sumList = sumList.concat(d.collecteList);
+  }
+  return sumList;
+};
+// Write merged content and by postal code to files
+var writeFiles = (data) => { 
+  files.writeFile(data, datetimestamp, `all.json`);
+  files.writeByPostalCode(data, datetimestamp);
+ };
+
+
+// Async error handler
+ var errHandler = function (err) {
+  console.error(err);
+}

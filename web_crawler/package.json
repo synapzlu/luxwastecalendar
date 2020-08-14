@@ -18,12 +18,10 @@
   "homepage": "https://github.com/synapzlu/luxwastecalendar#readme",
   "keywords": [],
   "dependencies": {
-    "ajv": "^6.12.3",
     "cheerio": "^1.0.0-rc.3",
     "fixy": "^1.3.0",
     "got": "^11.5.1",
-    "node-ical": "^0.10.0",
-    "request": "^2.88.2"
+    "node-ical": "^0.11.3"
   },
   "devDependencies": {
     "jest": "^26.2.2"
