@@ -71,7 +71,7 @@ module.exports.getPostalCodesByCityName = function (city) {
 
 
 // Returns an array of postal codes
-module.exports.getPostalCodesByCityAndStreetName = function (city, street) {
+module.exports.getPostalCodeByCityAndStreetName = function (city, street) {
 
     city = this.normalizeCityName(city);
 
@@ -86,8 +86,8 @@ module.exports.getPostalCodesByCityAndStreetName = function (city, street) {
     }
 
     if (tmpCodePostal.length === 0)
-        console.error("[UTILS.getPostalCodesByCityName] Postal codes not found for " + city)
-
-    return tmpCodePostal
+        console.error(`[UTILS.getPostalCodeByCityAndStreetName] Postal codes not found for ${city} - ${street}`);
+  
+    return tmpCodePostal;
 }
 

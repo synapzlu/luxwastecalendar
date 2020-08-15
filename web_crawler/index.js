@@ -33,8 +33,7 @@ function main(mode) {
     vdl.getContent(mode)
   ]).then((res) => writeIndividualFiles(res), errHandler)
   .then((res) => mergeFiles(res), errHandler)
-  .then((res) => writeFiles(res), errHandler)
-  .then(console.log(`[APP] Process complete. Output files can be found in : output/${datetimestamp} folder`));
+  .then((res) => writeFiles(res), errHandler);
 }
 
 
@@ -61,6 +60,7 @@ var mergeFiles = (data) => {
 };
 // Write merged content and by postal code to files
 var writeFiles = (data) => { 
+  console.log("[APP] Writing files to disk");
   files.writeFile(data, datetimestamp, `all.json`);
   files.writeByPostalCode(data, datetimestamp);
  };
@@ -68,5 +68,5 @@ var writeFiles = (data) => {
 
 // Async error handler
  var errHandler = function (err) {
-  console.error(err);
+  console.error("WTF"+err);
 }

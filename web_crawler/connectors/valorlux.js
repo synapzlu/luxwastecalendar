@@ -4,6 +4,20 @@ const fs = require('fs');
 const utils = require('../utils');
 const Collecte = require('../classes/Collecte');
 
+// This connector is simply reading the complete valorlux calendar from a single json available to public
+// They use it for they own website and can be queried from any client. Thanks valorlux :)
+
+
+// Library limitations
+// Esch-sur-Alzette : cannot distinguish TourA and TourB
+// Differdange : cannot distinguish A, B, C ,D
+// Dudelange : cannot distinguish Tournée de Lundi, Mardi, Mercredi ...
+// Luxembourg : cannot distinguish Tour 1 to 13 (but already retrieved  from vdl.lu)
+
+// To FIX
+// Pétange : must split between Pétange and Rodange/Lamadelaine
+// Walferdange : merge '2' and '3'
+
 // Potential data sources
 // - https://calendar.valorlux.lu/ (html and pdf)
 // - https://www.valorlux.lu/fr/pwa?collect_action=downloadics&force=1&city=Mersch (ics)
@@ -14,17 +28,6 @@ const Collecte = require('../classes/Collecte');
 const CONNECTOR_NAME = "valorlux";
 const ALL_URL = "https://www.valorlux.lu/manager/mod/valorlux/valorlux/all";
 const VALORLUX_TYPE = "PMC";
-
-
-// Limitations
-// Esch-sur-Alzette : cannot distinguish TourA and TourB
-// Differdange : cannot distinguish A, B, C ,D
-// Dudelange : cannot distinguish Tournée de Lundi, Mardi, Mercredi ...
-// Luxembourg : cannot distinguish Tour 1 to 13 (but already retrieved  from vdl.lu)
-
-// To FIX
-// Pétange : must split between Pétange and Rodange/Lamadelaine
-// Walferdange : merge '2' and '3'
 
 const BLOCKLIST = ['Esch-sur-Alzette', 'Differdange', 'Dudelange', 'Luxembourg', 'Pétange', 'Walferdange'];
 const ALLOWLIST = []; // To limit results (testing)

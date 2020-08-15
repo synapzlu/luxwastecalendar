@@ -23,7 +23,6 @@ function writeByPostalCode(data, datetimestamp) {
         if (tmpCollecte.length != 0) {
             // Sort events by date and dump files for offline processing
             writeFile(tmpCollecte.sort((e1, e2) => utils.sortByDate(e1.event_date, e2.event_date)), datetimestamp, `${p}.json`);
-            console.log(`[APP] Writing ${p}.json`);
         }
     }
 }

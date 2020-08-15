@@ -4,6 +4,12 @@ const got = require('got');
 const utils = require('../utils');
 const Collecte = require('../classes/Collecte');
 
+
+// This SIDEC connector is using basic HTML parsing techniques using cheerio library.
+// All pages are loaded one by one, then we parse each month table and then exract waste pickup events from image file name
+// For example, "caption-dechets_menagers-16.gif" in the 3rd table means a RESIDUAL pickup on the 16th of March.
+
+
 const CONNECTOR_NAME = "sidec";
 const sidecUrl = 'http://sidec.lu/fr/Collectes/Calendrier';
 const yearUrlParam = "annee=";
