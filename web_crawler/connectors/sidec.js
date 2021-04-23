@@ -15,7 +15,7 @@ const sidecUrl = 'http://sidec.lu/fr/Collectes/Calendrier';
 const yearUrlParam = "annee=";
 const communeUrlParam = "myCommune=";
 
-const YEAR = 2020;
+const YEAR = 2021;
 
 
 // | API Type | VDL                  | Sidec              | 
