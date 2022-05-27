@@ -6,31 +6,37 @@ const Collecte = require('../classes/Collecte');
 
 
 // This SIDEC connector is using basic HTML parsing techniques using cheerio library.
-// All pages are loaded one by one, then we parse each month table and then exract waste pickup events from image file name
+// All pages are loaded one by one, then we parse each month table and then extract waste pickup events from image file name
 // For example, "caption-dechets_menagers-16.gif" in the 3rd table means a RESIDUAL pickup on the 16th of March.
 
 
 const CONNECTOR_NAME = "sidec";
-const sidecUrl = 'http://sidec.lu/fr/Collectes/Calendrier';
+const sidecUrl = 'https://sidec.lu/fr/Collectes/Calendrier';
 const yearUrlParam = "annee=";
 const communeUrlParam = "myCommune=";
+// Introduced the startupFullUrl because a call on sidecUrl was not directing the full calendar list anymore
+const startupFullUrl = "https://www.sidec.lu/fr/Collectes/Calendrier?annee=2022&myCommune=2611"; 
 
-const YEAR = 2021;
+const YEAR = 2022;
 
+// !! Bug in Sidec html source code : GLASS and ORGANIC are inverted !!
 
 // | API Type | VDL                  | Sidec              | 
 // |----------|----------------------|--------------------|
 // | BULKY    |                      | encombrants        |
-// | GLASS    | Verre                | verre              |
-// | ORGANIC  | Déchets alimentaires | dechets organiques |
+// | GLASS    | Verre                | dechets organiques |
+// | ORGANIC  | Déchets alimentaires | verre              |
 // | PAPER    | Papier/Carton        | papiers cartons    |
 // | PMC      | Emballages Valorlux  |                    |
 // | RESIDUAL | Déchets résiduels    | dechets menagers   |
 
+
+
+
 const wasteMapping = {
     "encombrants": "BULKY",
-    "verre": "GLASS",
-    "dechets organiques": "ORGANIC",
+    "verre": "ORGANIC",
+    "dechets organiques": "GLASS",
     "papiers cartons": "PAPER",
     "dechets menagers": "RESIDUAL"
 }
@@ -49,8 +55,6 @@ async function loadHtmlContent(url) {
         });
     } catch (err) { throw new Error("[SIDEC.loadHtmlContent]" + err.toString()); }
 }
-
-
 
 module.exports.extractTypes = extractTypes;
 function extractTypes(itemType) {
@@ -151,7 +155,7 @@ async function parseSidecContent(calendarList) {
         let $;
         try { $ = await loadHtmlContent(fullUrl); } catch (err) { throw new Error("[SIDEC.parseSidecContent]" + err.toString()); }
 
-        // Read the html source and iterate over each month
+          // Read the html source and iterate over each month
         $('#col-2 .calendar').each((index, element) => {
 
             let month = (index + 1);

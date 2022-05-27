@@ -24,8 +24,8 @@ const Collecte = require('../classes/Collecte');
 const CONNECTOR_NAME = "vdl";
 const VDL_START_URL = "https://www.vdl.lu/fr/vivre/domicile-au-quotidien/collecter-et-trier-ses-dechets/calendrier-des-collectes-new/";
 const VDL_END_URL = "/all/ical.ics";
-const DOWNLOAD_TEMPO = 500; // milliseconds
-let MAX_VDL = 798; // 798 As found on https://www.vdl.lu/fr/vivre/domicile-au-quotidien/collecter-et-trier-ses-dechets/calendrier-des-collectes/ . TODO: Fetch this value dynamically
+const DOWNLOAD_TEMPO = 100; // milliseconds
+let MAX_VDL = 804; // 804 As found in the source code of https://www.vdl.lu/fr/vivre/domicile-au-quotidien/collecter-et-trier-ses-dechets/calendrier-des-collectes/ . TODO: Fetch this value dynamically
 
 
 // | API Type | VDL                  | Sidec              | 
@@ -55,7 +55,7 @@ function getVdlCalendarUrl(c) {
 
 module.exports.getContent = async function getContent(mode) {
 
-    let index = 1;
+    let index = 0;
     let collecteList = [];
 
     if (mode == utils.MODE_OFFLINE) {

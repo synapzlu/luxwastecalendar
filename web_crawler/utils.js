@@ -1,11 +1,21 @@
 const caclr = require('./caclr');
 
-const dataFix = {
+const dataFixCity = {
     // Valorlux
     'Lac de la Haute Sûre': 'Lac de la Haute-Sûre',
     'Diekrich': 'Diekirch',
     // Sidec
     'Lac Haute Sûre': 'Lac de la Haute-Sûre',
+};
+const dataFixStreet = {
+    // VDL
+    'Rue des Paquerettes': 'Rue des Pâquerettes',
+    "Place Jeanne D'Arc": "Place Jeanne d'Arc",
+    'Rue Henri Vannérus': 'Rue Henri Vannérus',
+    'Rue Joseph Hackin': 'Rue Marie et Joseph Hackin',
+    'Rue Maurice Barres': 'Rue Maurice Barrès',
+    'Rue Munchen-Tesch': 'Rue Marie Barbe Joséphine Munchen-Tesch',
+    'Rue Theophile Funck-Brentano': 'Rue Théophile Funck-Brentano'
 };
 
 module.exports.MODE_OFFLINE = 'offline';
@@ -13,7 +23,11 @@ module.exports.DRYRUN = 'dryrun'
 
 // Normalize city names. Reference = caclr database
 module.exports.normalizeCityName = function (city) {
-    return dataFix[city] ? dataFix[city] : city;
+    return dataFixCity[city] ? dataFixCity[city] : city;
+}
+// Normalize city names. Reference = caclr database
+module.exports.normalizeStreetName = function (street) {
+    return dataFixStreet[street] ? dataFixStreet[street] : street;
 }
 
 // Return first item of a list
@@ -74,6 +88,7 @@ module.exports.getPostalCodesByCityName = function (city) {
 module.exports.getPostalCodeByCityAndStreetName = function (city, street) {
 
     city = this.normalizeCityName(city);
+    street = this.normalizeStreetName(street);
 
     // Search on Commune level
     let tmpCodePostal = caclr.addressList.filter(addr => addr.Commune === city && addr.Rue === street);
