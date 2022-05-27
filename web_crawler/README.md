@@ -9,8 +9,9 @@ In the current version, it crowls from:
 - www.sidec.lu
 - www.valorlux.lu
 
+Which results in 3447 different postal codes accross Luxembourg country.
+The script outputs 1 JSON file per postal code (total approx. 30 MB) containing all waste pickup events.
 
-Outputs 1 JSON file per postal code (total approx. 30 MB) containing all events from Luxembourg Ville.
 
 Sample of one output JSON file :
 ```
