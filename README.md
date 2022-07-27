@@ -7,5 +7,5 @@ In this repo, you will find source code of 3 applications :
 # Final product
 
 Available here: 
-https://www.amazon.fr/dp/B08DK4QJFQ
-https://www.amazon.de/dp/B08DK4QJFQ
+- https://www.amazon.fr/dp/B08DK4QJFQ
+- https://www.amazon.de/dp/B08DK4QJFQ
