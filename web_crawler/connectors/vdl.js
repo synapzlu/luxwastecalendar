@@ -1,6 +1,8 @@
 const ical = require('node-ical'); // ical (.ics) file parser
+const got = require('got'); // simple http library
 
 const utils = require('../utils');
+const files = require('../files');
 const Collecte = require('../classes/Collecte');
 
 // This library is retrieving all possible calendar of Ville de Luxembourg in ICS format.
@@ -65,11 +67,12 @@ module.exports.getContent = async function getContent(mode) {
         console.debug("[VDL.getContent] Start parsing online file");
     }
 
-
     try {
 
         do {
-            let res = await parseVdlContent(getVdlCalendarUrl(index));
+            let data = await getIcsFile(index);            
+            let res = await parseVdlContent(data);     
+            
             collecteList = res.concat(collecteList);
             await new Promise(r => setTimeout(r, Math.random() * DOWNLOAD_TEMPO)); // Bypass http request rate protection from target web hosting
 
@@ -85,18 +88,31 @@ module.exports.getContent = async function getContent(mode) {
     return { 'name': CONNECTOR_NAME, 'collecteList': collecteList };
 }
 
+// Basic function to return ICS files content. Read from cache or download new one.
+async function getIcsFile(index) {
+
+    var data;
+
+    try { 
+        data = files.readFromCache(`${index}.ics`, CONNECTOR_NAME);
+   
+    } catch (err) {
+        var url = getVdlCalendarUrl(index);
+        let res = await got(url);
+    
+        files.writeToCache(`${index}.ics`, res.body, CONNECTOR_NAME);
+        data = res.body;
+    }
+        
+    return data;   
+}
 
 
 // Calendar file parser
-async function parseVdlContent(url) {
-    console.debug("[VDL] Fetching : " + url);
-
+async function parseVdlContent(ics) {
+   
     let collecteList = [];
-
-    const data = await ical.async.fromURL(url);
-    // if (err) {
-    //     throw new Error("[VDL.parseVdlContent] " + err.toString());
-    // }
+    const data = ical.parseICS(ics);
 
     for (let k in data) {
         if (data.hasOwnProperty(k)) {

@@ -26,3 +26,19 @@ function writeByPostalCode(data, datetimestamp) {
         }
     }
 }
+
+// Export content to cache.
+module.exports.writeToCache = writeToCache;
+function writeToCache(filename, data, connector) {
+    fs.mkdir(`output/cache/${connector}`, { recursive: true }, (err) => {
+        if (err) throw err;
+    });
+
+    fs.writeFileSync(`output/cache/${connector}/${filename}`, data, 'utf8');
+}
+
+// Read content from cache.
+module.exports.readFromCache = readFromCache;
+function readFromCache(filename, connector) {
+    return fs.readFileSync(`output/cache/${connector}/${filename}`, 'utf-8');
+}

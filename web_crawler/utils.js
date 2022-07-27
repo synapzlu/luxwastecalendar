@@ -11,7 +11,7 @@ const dataFixStreet = {
     // VDL
     'Rue des Paquerettes': 'Rue des Pâquerettes',
     "Place Jeanne D'Arc": "Place Jeanne d'Arc",
-    'Rue Henri Vannérus': 'Rue Henri Vannérus',
+    'Rue Henri Vannerus': 'Rue Henri Vannérus',
     'Rue Joseph Hackin': 'Rue Marie et Joseph Hackin',
     'Rue Maurice Barres': 'Rue Maurice Barrès',
     'Rue Munchen-Tesch': 'Rue Marie Barbe Joséphine Munchen-Tesch',

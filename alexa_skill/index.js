@@ -256,7 +256,7 @@ function queryAPI(postalCode, date, handlerInput) {
                         let targetDate = `${structDate.getDate()} ${requestAttributes.t(monthsArray[structDate.getMonth()])} ${structDate.getFullYear()}`;
                         
                         for (const [i, c] of targetCollecteList.entries()) {
-                            targetDechets += `${c.summary} `;
+                            targetDechets += `${requestAttributes.t(c.summary)} `;
                             targetDechets += i === targetCollecteList.length-1 ? `, ` : requestAttributes.t('AND');
                         }
                                         

@@ -1,7 +1,7 @@
 const got = require('got');
-const fs = require('fs');
 
 const utils = require('../utils');
+const files = require('../files');
 const Collecte = require('../classes/Collecte');
 
 // This connector is simply reading the complete valorlux calendar from a single json available to public
@@ -26,8 +26,9 @@ const Collecte = require('../classes/Collecte');
 // - https://www.valorlux.lu/manager/mod/valorlux/valorlux/all (json)
 
 const CONNECTOR_NAME = "valorlux";
-const ALL_URL = "https://www.valorlux.lu/manager/mod/valorlux/valorlux/all";
 const VALORLUX_TYPE = "PMC";
+const ALL_URL = "https://www.valorlux.lu/manager/mod/valorlux/valorlux/all";
+const ALL_FILENAME = "valorlux_all.json";
 
 const BLOCKLIST = ['Esch-sur-Alzette', 'Differdange', 'Dudelange', 'Luxembourg', 'Pétange', 'Walferdange'];
 const ALLOWLIST = []; // To limit results (testing)
@@ -35,28 +36,20 @@ const ALLOWLIST = []; // To limit results (testing)
 
 module.exports.getContent = async function getContent(mode) {
 
-     if (mode == utils.MODE_OFFLINE) {        
-        console.debug("[VALORLUX.getContent] Start parsing offline file");
-        try {            
-            let file = fs.readFileSync('./data/valorlux_all.json');
-            let data = JSON.parse(file)
-            // TODO : add some syntax check to ensure the JSON is matching the expected format                           
-            return parseValorluxContent(data);
-        } catch (err) {
-            throw new Error("[VALORLUX.getContent] " + err.toString());
-        }
-    } else {
-        console.debug("[VALORLUX.getContent] Start parsing online file");
-        try {
-            let res = await got(ALL_URL);
-            let data = JSON.parse(res.body);
-            // TODO : add some syntax check to ensure the JSON is matching the expected format 
-            return parseValorluxContent(data);
-        } catch (err) {
-            throw new Error("[VALORLUX.getContent] " + err.toString());
-        }
-    }
+    var data;
 
+    try { 
+        data = files.readFromCache(ALL_FILENAME, CONNECTOR_NAME);
+        console.debug("[VALORLUX.getContent] Cache data found");
+        return parseValorluxContent(JSON.parse(data));;     
+    } catch (err) {
+        console.debug("[VALORLUX.getContent] Start parsing online file");
+        let res = await got(ALL_URL);
+        files.writeToCache(ALL_FILENAME, res.body, CONNECTOR_NAME);
+        let data = JSON.parse(res.body);
+        // TODO : add some syntax check to ensure the JSON is matching the expected format 
+        return parseValorluxContent(data);
+     }
 }
 
 module.exports.parseContent = parseValorluxContent;
